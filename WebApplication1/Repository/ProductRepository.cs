@@ -42,7 +42,7 @@ namespace LearningPathDev.Repository
         public async Task<Product> GetProductByDescription(string description)
         {
             var products = await GetllProducts();
-            var productByDesc = products.Where(x => x.Description == description).FirstOrDefault();
+            var productByDesc = products.Where(x => x.Description.Contains(description)).FirstOrDefault();
             return productByDesc;
         }
         public async Task<Product> GetProductById(Guid Id)
