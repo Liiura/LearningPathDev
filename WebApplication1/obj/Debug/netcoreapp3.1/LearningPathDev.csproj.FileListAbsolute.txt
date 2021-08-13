@@ -123,3 +123,4 @@ C:\Users\user\OneDrive\Documents\Proyectos\LearningPathDev\WebApplication1\obj\D
 C:\Users\user\OneDrive\Documents\Proyectos\LearningPathDev\WebApplication1\obj\Debug\netcoreapp3.1\LearningPathDev.dll
 C:\Users\user\OneDrive\Documents\Proyectos\LearningPathDev\WebApplication1\obj\Debug\netcoreapp3.1\LearningPathDev.pdb
 C:\Users\user\OneDrive\Documents\Proyectos\LearningPathDev\WebApplication1\obj\Debug\netcoreapp3.1\LearningPathDev.genruntimeconfig.cache
+C:\Users\user\OneDrive\Documents\Proyectos\LearningPathDev\WebApplication1\obj\Debug\netcoreapp3.1\LearningPathDev.csproj.AssemblyReference.cache

@@ -25,16 +25,44 @@ namespace LearningPathDev.Controllers
         // GET api/<ProductController>/5
         [HttpGet]
         [Route("search")]
-        public async Task<IActionResult> GetProductWithFilter(string description)
+        public async Task<IActionResult> GetProductWithFilter(string description, Guid Id)
         {
-            var product = await _IProduct.GetProductByDescription(description);
-            return Ok(product);
+            if (string.IsNullOrEmpty(description) && Id == Guid.Empty)
+            {
+                return StatusCode(400, "bad request");
+            }
+
+            var response = await _IProduct.GetProductByFilter(description, Id);
+            if (response.StatusCode == 200)
+            {
+                if (response.Products != null)
+                {
+                    return StatusCode(response.StatusCode, response.Products);
+                }
+                else if (response.Product != null)
+                {
+                    return StatusCode(response.StatusCode, response.Product);
+                }
+                else
+                {
+                    return StatusCode(404, "resource not found");
+                }
+            }
+            else if (response.StatusCode == 404 || response.StatusCode == 500)
+            {
+                return StatusCode(response.StatusCode, response.Error);
+            }
+            return StatusCode(500, "internal error :c");
         }
 
         // POST api/<ProductController>
         [HttpPost]
         public async Task<IActionResult> CreateProductController([FromBody] Product product)
         {
+            if (product == null)
+            {
+                return StatusCode(400, "You need provide a valid data for update a resource");
+            }
             bool isInsert = await _IProduct.CreateProduct(product);
             string message;
             if (isInsert)
@@ -50,6 +78,14 @@ namespace LearningPathDev.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateProduct(Guid Id, [FromBody] Product productUpdate)
         {
+            if (Id == null || Id == Guid.Empty)
+            {
+                return StatusCode(400, "You need provide a valid identification for delete the resource");
+            }
+            if (productUpdate == null)
+            {
+                return StatusCode(400, "You need provide a valid data for update a resource");
+            }
             bool isUpdated = await _IProduct.UpdateProduct(Id, productUpdate);
             string message;
             if (isUpdated)
@@ -65,6 +101,10 @@ namespace LearningPathDev.Controllers
         [HttpDelete]
         public async Task<IActionResult> DeleteProduct(Guid Id)
         {
+            if (Id == null || Id == Guid.Empty)
+            {
+                return StatusCode(400, "You need provide a valid identification for delete the resource");
+            }
             bool isDeleted = await _IProduct.DeleteProduct(Id);
             string message;
             if (isDeleted)
