@@ -1,36 +1,80 @@
-﻿using LearningPathDev.DatabaseContext;
+﻿using AutoMapper;
+using LearningPathDev.DatabaseContext;
 using LearningPathDev.Interfaces;
 using LearningPathDev.Models;
+using LearningPathDev.Models.DTO;
 using LearningPathDev.ObjectReponses;
 using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 namespace LearningPathDev.Repository
 {
     public class ProductRepository : IProduct
     {
         private readonly ProductsContext _DbProducts;
-        public ProductRepository(ProductsContext _dbProduts)
+        private readonly IMapper _Mapper;
+        public ProductRepository(ProductsContext _dbProduts, IMapper mapper)
         {
             _DbProducts = _dbProduts;
+            _Mapper = mapper;
         }
-        public async Task<bool> CreateProduct(Product product)
+        public async Task<ProductReponse> CreateProduct(Product product)
         {
-            using var context = _DbProducts;
-            product.Id = Guid.NewGuid();
-            await context.Product.AddAsync(product);
-            if (await Save())
+            try
             {
-                return true;
+                product.Id = Guid.NewGuid();
+                product.PurchaseDate = DateTimeOffset.Now.ToUniversalTime();
+                await _DbProducts.Product.AddAsync(product);
+                if (await Save())
+                {
+                    return new ProductReponse
+                    {
+                        TransactionState = true,
+                        StatusCode = 201
+                    };
+                }
+                return new ProductReponse
+                {
+                    TransactionState = false,
+                    StatusCode = 500,
+                    Error = "Internal error"
+                };
             }
-            return false;
+            catch (Exception ex)
+            {
+
+                return new ProductReponse
+                {
+                    TransactionState = false,
+                    StatusCode = 500,
+                    Error = ex.ToString()
+                };
+            }
         }
-        public async Task<List<Product>> GetllProducts()
+        public async Task<ProductReponse> GetllProducts()
         {
-            var products = await _DbProducts.Product.ToListAsync();
-            return products;
+            try
+            {
+                var products = await _DbProducts.Product.ToListAsync();
+                return new ProductReponse
+                {
+                    Products = products,
+                    StatusCode = 200,
+                    TransactionState = true
+                };
+            }
+            catch (Exception ex)
+            {
+
+                return new ProductReponse
+                {
+                    StatusCode = 500,
+                    Error = ex.ToString(),
+                    TransactionState = false
+                };
+            }
         }
 
         public async Task<bool> Save()
@@ -45,8 +89,8 @@ namespace LearningPathDev.Repository
             ProductReponse productReponse = null;
             try
             {
-                var products = await GetllProducts();
-                if (Id != null || Id != Guid.Empty || !string.IsNullOrEmpty(description))
+                var AllProducts = await GetllProducts();
+                if (Id != null && Id != Guid.Empty)
                 {
                     var productFiltered = await GetProductById(Id);
                     productReponse = new ProductReponse
@@ -57,7 +101,7 @@ namespace LearningPathDev.Repository
                 }
                 else if (!string.IsNullOrEmpty(description))
                 {
-                    var productsFiltered = products.Where(x => x.Description.Contains(description)).ToList();
+                    var productsFiltered = AllProducts.Products.Where(x => x.Description.Contains(description)).ToList();
                     if (productsFiltered.Count == 0)
                     {
                         productReponse = new ProductReponse
@@ -97,33 +141,90 @@ namespace LearningPathDev.Repository
         }
         public async Task<Product> GetProductById(Guid Id)
         {
-            var products = await GetllProducts();
-            var productByDesc = products.Where(x => x.Id == Id).FirstOrDefault();
+            var AllProducts = await GetllProducts();
+            var productByDesc = AllProducts.Products.Where(x => x.Id == Id).FirstOrDefault();
             return productByDesc;
         }
 
-        public async Task<bool> DeleteProduct(Guid Id)
+        public async Task<ProductReponse> DeleteProduct(Guid Id)
         {
-            var product = await GetProductById(Id);
-            _DbProducts.Remove(product);
-            if (await Save())
+            try
             {
-                return true;
+                var product = await GetProductById(Id);
+                if (product == null)
+                {
+                    return new ProductReponse
+                    {
+                        StatusCode = 404,
+                        TransactionState = false,
+                        Error = "Resource not found"
+                    };
+                }
+                _DbProducts.Remove(product);
+                if (await Save())
+                {
+                    return new ProductReponse
+                    {
+                        StatusCode = 201,
+                        TransactionState = true
+                    };
+                }
+                return new ProductReponse
+                {
+                    StatusCode = 500,
+                    TransactionState = false,
+                    Error = "Internal error"
+                };
             }
-            return false;
+            catch (Exception ex)
+            {
+                return new ProductReponse
+                {
+                    StatusCode = 500,
+                    TransactionState = false,
+                    Error = ex.ToString()
+                };
+            }
         }
-        public async Task<bool> UpdateProduct(Guid Id, Product productUpdate)
+        public async Task<ProductReponse> UpdateProduct(Guid Id, ProductDTO productUpdate)
         {
-            var productSearch = await GetProductById(Id);
-            productSearch.Description = productUpdate.Description;
-            productSearch.Price = productUpdate.Price;
-            productSearch.ProductState = productUpdate.ProductState;
-            productSearch.PurchaseDate = productUpdate.PurchaseDate;
-            if (await Save())
+            try
             {
-                return true;
+                var productSearch = await GetProductById(Id);
+                if (productSearch == null)
+                {
+                    return new ProductReponse
+                    {
+                        StatusCode = 404,
+                        TransactionState = false,
+                        Error = "Resource not found"
+                    };
+                }
+                productSearch = _Mapper.Map(productUpdate, productSearch);
+                if (await Save())
+                {
+                    return new ProductReponse
+                    {
+                        StatusCode = 201,
+                        TransactionState = true
+                    };
+                }
+                return new ProductReponse
+                {
+                    StatusCode = 500,
+                    TransactionState = false,
+                    Error = "Internal error"
+                };
             }
-            return false;
+            catch (Exception ex)
+            {
+                return new ProductReponse
+                {
+                    StatusCode = 500,
+                    TransactionState = false,
+                    Error = ex.ToString()
+                };
+            }
         }
     }
 }

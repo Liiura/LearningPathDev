@@ -1,9 +1,10 @@
-﻿using LearningPathDev.Interfaces;
+﻿using AutoMapper;
+using LearningPathDev.Interfaces;
 using LearningPathDev.Models;
+using LearningPathDev.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
-
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace LearningPathDev.Controllers
@@ -13,13 +14,22 @@ namespace LearningPathDev.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProduct _IProduct;
-        public ProductController(IProduct Iproduct) => _IProduct = Iproduct;
+        private readonly IMapper _Mapper;
+        public ProductController(IProduct Iproduct, IMapper mapper)
+        {
+            _IProduct = Iproduct;
+            _Mapper = mapper;
+        }
         // GET: api/<ProductController>
         [HttpGet]
         public async Task<IActionResult> GetAllProducts()
         {
-            var AllProducts = await _IProduct.GetllProducts();
-            return Ok(AllProducts);
+            var payload = await _IProduct.GetllProducts();
+            if (payload.TransactionState)
+            {
+                return StatusCode(payload.StatusCode, payload.Products);
+            }
+            return StatusCode(payload.StatusCode, payload.Error);
         }
 
         // GET api/<ProductController>/5
@@ -57,44 +67,43 @@ namespace LearningPathDev.Controllers
 
         // POST api/<ProductController>
         [HttpPost]
-        public async Task<IActionResult> CreateProductController([FromBody] Product product)
+        public async Task<IActionResult> CreateProductController([FromBody] ProductDTO productDTO)
         {
-            if (product == null)
+            if (productDTO == null)
             {
-                return StatusCode(400, "You need provide a valid data for update a resource");
+                return StatusCode(400, "You need provide a valid data for create a resource");
             }
-            bool isInsert = await _IProduct.CreateProduct(product);
+            var product = _Mapper.Map<Product>(productDTO);
+            var payload = await _IProduct.CreateProduct(product);
             string message;
-            if (isInsert)
+            if (payload.TransactionState)
             {
                 message = "Product was inserted";
-                return StatusCode(201, new { message });
+                return StatusCode(payload.StatusCode, new { message });
             }
-            message = "Internal server error";
-            return StatusCode(500, new { message });
+            return StatusCode(payload.StatusCode, new { payload.Error });
         }
 
         // PUT api/<ProductController>/5
         [HttpPut]
-        public async Task<IActionResult> UpdateProduct(Guid Id, [FromBody] Product productUpdate)
+        public async Task<IActionResult> UpdateProduct(Guid Id, [FromBody] ProductDTO productDTO)
         {
             if (Id == null || Id == Guid.Empty)
             {
-                return StatusCode(400, "You need provide a valid identification for delete the resource");
+                return StatusCode(400, "You need provide a valid identification for update the resource");
             }
-            if (productUpdate == null)
+            if (productDTO == null)
             {
                 return StatusCode(400, "You need provide a valid data for update a resource");
             }
-            bool isUpdated = await _IProduct.UpdateProduct(Id, productUpdate);
+            var payload = await _IProduct.UpdateProduct(Id, productDTO);
             string message;
-            if (isUpdated)
+            if (payload.TransactionState)
             {
                 message = $"Product with Id = {Id} was updated";
-                return Ok(new { message });
+                return StatusCode(payload.StatusCode, new { message });
             }
-            message = "Internal server error";
-            return StatusCode(500, new { message });
+            return StatusCode(payload.StatusCode, new { payload.Error });
         }
 
         // DELETE api/<ProductController>/5
@@ -105,15 +114,14 @@ namespace LearningPathDev.Controllers
             {
                 return StatusCode(400, "You need provide a valid identification for delete the resource");
             }
-            bool isDeleted = await _IProduct.DeleteProduct(Id);
+            var payload = await _IProduct.DeleteProduct(Id);
             string message;
-            if (isDeleted)
+            if (payload.TransactionState)
             {
                 message = $"Product with Id = {Id} was deleted";
-                return Ok(new { message });
+                return StatusCode(payload.StatusCode, new { message });
             }
-            message = "Internal server error";
-            return StatusCode(500, new { message });
+            return StatusCode(payload.StatusCode, new { payload.Error });
         }
     }
 }

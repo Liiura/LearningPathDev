@@ -9,6 +9,7 @@ namespace LearningPathDev.ObjectReponses
         public Product Product { get; set; }
         public List<Product> Products { get; set; }
         public string Error { get; set; }
+        public bool TransactionState { get; set; }
 
     }
 }

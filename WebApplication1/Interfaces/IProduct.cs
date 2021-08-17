@@ -1,17 +1,17 @@
 ﻿using LearningPathDev.Models;
+using LearningPathDev.Models.DTO;
 using LearningPathDev.ObjectReponses;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace LearningPathDev.Interfaces
 {
     public interface IProduct
     {
-        Task<bool> CreateProduct(Product product);
-        Task<List<Product>> GetllProducts();
+        Task<ProductReponse> CreateProduct(Product product);
+        Task<ProductReponse> GetllProducts();
         Task<ProductReponse> GetProductByFilter(string description, Guid Id);
-        Task<bool> DeleteProduct(Guid Id);
-        Task<bool> UpdateProduct(Guid Id, Product productUpdate);
+        Task<ProductReponse> DeleteProduct(Guid Id);
+        Task<ProductReponse> UpdateProduct(Guid Id, ProductDTO productDTO);
     }
 }

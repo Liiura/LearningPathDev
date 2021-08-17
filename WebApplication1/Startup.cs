@@ -1,5 +1,6 @@
 using LearningPathDev.DatabaseContext;
 using LearningPathDev.Interfaces;
+using LearningPathDev.Mapper;
 using LearningPathDev.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,11 +9,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
 namespace LearningPathDev
 {
     public class Startup
     {
+        readonly string _MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -23,11 +24,21 @@ namespace LearningPathDev
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: _MyAllowSpecificOrigins,
+                    builder => builder.WithOrigins("http://localhost:4200")
+                                                    .AllowAnyHeader()
+                                                  .AllowAnyMethod());
+            });
+            services.AddCors();
+            services.AddAutoMapper(typeof(Startup));
+            services.AddAutoMapper(typeof(Mappers));
             services.AddControllers();
             services.AddScoped<IProduct, ProductRepository>();
             services.AddMvc();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            var connectionStrings = Configuration["ConnectionStrings:DevConnection"];
+            var connectionStrings = Configuration["ConnectionStrings:ProdConnection"];
             services.AddDbContext<ProductsContext>(o => o.UseSqlServer(connectionStrings));
         }
 
@@ -43,6 +54,7 @@ namespace LearningPathDev
 
             app.UseRouting();
 
+            app.UseCors(_MyAllowSpecificOrigins);
 
             app.UseAuthorization();
 
