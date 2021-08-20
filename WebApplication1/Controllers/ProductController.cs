@@ -1,9 +1,11 @@
-﻿using LearningPathDev.Interfaces;
+﻿using AutoMapper;
+using LearningPathDev.Interfaces;
 using LearningPathDev.Models;
+using LearningPathDev.Models.DTO;
+using LearningPathDev.ObjectReponses;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
-
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace LearningPathDev.Controllers
@@ -13,43 +15,118 @@ namespace LearningPathDev.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProduct _IProduct;
-        public ProductController(IProduct Iproduct) => _IProduct = Iproduct;
+        private readonly IMapper _Mapper;
+        public ProductController(IProduct Iproduct, IMapper mapper)
+        {
+            _IProduct = Iproduct;
+            _Mapper = mapper;
+        }
         // GET: api/<ProductController>
         [HttpGet]
-        public IEnumerable<string> Get()
+        public async Task<IActionResult> GetAllProducts()
         {
-            return new string[] { "value1", "value2" };
+            var payload = await _IProduct.GetllProducts();
+            if (payload.TransactionState)
+            {
+                return StatusCode(payload.StatusCode, payload.Products);
+            }
+            return StatusCode(payload.StatusCode, payload.Error);
         }
 
         // GET api/<ProductController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet]
+        [Route("search")]
+        public async Task<IActionResult> GetProductWithFilter(string description, string Id)
         {
-            return "value";
+            if (string.IsNullOrEmpty(description) && Guid.Parse(Id) == Guid.Empty)
+            {
+                return StatusCode(400, "bad request");
+            }
+            ProductReponse response = new ProductReponse();
+            if (Id == null)
+            {
+                response = await _IProduct.GetProductByFilter(description, Guid.Empty);
+
+            }
+            if (response.StatusCode == 200)
+            {
+                if (response.Products != null)
+                {
+                    return StatusCode(response.StatusCode, response.Products);
+                }
+                else if (response.Product != null)
+                {
+                    return StatusCode(response.StatusCode, response.Product);
+                }
+                else
+                {
+                    return StatusCode(404, "resource not found");
+                }
+            }
+            else if (response.StatusCode == 404 || response.StatusCode == 500)
+            {
+                return StatusCode(response.StatusCode, response.Error);
+            }
+            return StatusCode(500, "internal error :c");
         }
 
         // POST api/<ProductController>
         [HttpPost]
-        public async Task<IActionResult> CreateProductController([FromBody] Product product)
+        public async Task<IActionResult> CreateProductController([FromBody] ProductDTO productDTO)
         {
-            bool isInsert = await _IProduct.CreateProduct(product);
-            if (isInsert)
+            if (productDTO == null)
             {
-                return StatusCode(201, new { message = "Product was inserted" });
+                return StatusCode(400, "You need provide a valid data for create a resource");
             }
-            return StatusCode(500, new { message = "Internal server error" });
+            var product = _Mapper.Map<Product>(productDTO);
+            var payload = await _IProduct.CreateProduct(product);
+            string message;
+            if (payload.TransactionState)
+            {
+                message = "Product was inserted";
+                return StatusCode(payload.StatusCode, new { message });
+            }
+            return StatusCode(payload.StatusCode, new { payload.Error });
         }
 
         // PUT api/<ProductController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut]
+        public async Task<IActionResult> UpdateProduct(string Id, [FromBody] ProductDTO productDTO)
         {
+            if (Guid.Parse(Id) == null || Guid.Parse(Id) == Guid.Empty)
+            {
+                return StatusCode(400, "You need provide a valid identification for update the resource");
+            }
+            if (productDTO == null)
+            {
+                return StatusCode(400, "You need provide a valid data for update a resource");
+            }
+            var payload = await _IProduct.UpdateProduct(Guid.Parse(Id), productDTO);
+            string message;
+            if (payload.TransactionState)
+            {
+                message = $"Product with Id = {Id} was updated";
+                return StatusCode(payload.StatusCode, new { message });
+            }
+            return StatusCode(payload.StatusCode, new { payload.Error });
         }
 
         // DELETE api/<ProductController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpDelete]
+        public async Task<IActionResult> DeleteProduct(string Id)
         {
+            if (Guid.Parse(Id) == null || Guid.Parse(Id) == Guid.Empty)
+            {
+                return StatusCode(400, "You need provide a valid identification for delete the resource");
+            }
+            var payload = await _IProduct.DeleteProduct(Guid.Parse(Id));
+            string message;
+            if (payload.TransactionState)
+            {
+                message = $"Product with Id = {Id} was deleted";
+                return StatusCode(payload.StatusCode, new { message });
+            }
+            return StatusCode(payload.StatusCode, new { payload.Error });
         }
     }
 }

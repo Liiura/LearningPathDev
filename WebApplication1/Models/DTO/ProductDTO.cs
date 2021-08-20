@@ -1,16 +1,12 @@
 ﻿using LearningPathDev.Models.Common;
-using System;
 
-
-namespace LearningPathDev.Models
+namespace LearningPathDev.Models.DTO
 {
-    public class Product
+    public class ProductDTO
     {
-        public Guid Id { get; set; }
         public string Description { get; set; }
         public string Type { get; set; }
         public double? Price { get; set; }
-        public DateTimeOffset? PurchaseDate { get; set; }
         public ProductStateOptions? ProductState { get; set; }
     }
 }
