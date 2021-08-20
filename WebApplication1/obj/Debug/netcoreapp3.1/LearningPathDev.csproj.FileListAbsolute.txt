@@ -61,7 +61,6 @@ C:\ProjectsPevaar\LearningPathDev\WebApplication1\obj\Debug\netcoreapp3.1\Learni
 C:\ProjectsPevaar\LearningPathDev\WebApplication1\obj\Debug\netcoreapp3.1\LearningPathDev.csproj.AssemblyReference.cache
 C:\ProjectsPevaar\LearningPathDev\WebApplication1\bin\Debug\netcoreapp3.1\Humanizer.dll
 C:\ProjectsPevaar\LearningPathDev\WebApplication1\bin\Debug\netcoreapp3.1\Microsoft.EntityFrameworkCore.Design.dll
-C:\Users\user\OneDrive\Documents\Proyectos\LearningPathDev\WebApplication1\obj\Debug\netcoreapp3.1\LearningPathDev.csproj.AssemblyReference.cache
 C:\Users\user\OneDrive\Documents\Proyectos\LearningPathDev\WebApplication1\obj\Debug\netcoreapp3.1\LearningPathDev.AssemblyInfoInputs.cache
 C:\Users\user\OneDrive\Documents\Proyectos\LearningPathDev\WebApplication1\obj\Debug\netcoreapp3.1\LearningPathDev.AssemblyInfo.cs
 C:\Users\user\OneDrive\Documents\Proyectos\LearningPathDev\WebApplication1\obj\Debug\netcoreapp3.1\LearningPathDev.csproj.CoreCompileInputs.cache
@@ -126,3 +125,4 @@ C:\Users\user\OneDrive\Documents\Proyectos\LearningPathDev\WebApplication1\obj\D
 C:\Users\user\OneDrive\Documents\Proyectos\LearningPathDev\WebApplication1\obj\Debug\netcoreapp3.1\LearningPathDev.dll
 C:\Users\user\OneDrive\Documents\Proyectos\LearningPathDev\WebApplication1\obj\Debug\netcoreapp3.1\LearningPathDev.pdb
 C:\Users\user\OneDrive\Documents\Proyectos\LearningPathDev\WebApplication1\obj\Debug\netcoreapp3.1\LearningPathDev.genruntimeconfig.cache
+C:\Users\user\OneDrive\Documents\Proyectos\LearningPathDev\WebApplication1\obj\Debug\netcoreapp3.1\LearningPathDev.csproj.AssemblyReference.cache

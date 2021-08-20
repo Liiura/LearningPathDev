@@ -27,7 +27,7 @@ namespace LearningPathDev
             services.AddCors(options =>
             {
                 options.AddPolicy(name: _MyAllowSpecificOrigins,
-                    builder => builder.WithOrigins("http://localhost:4200")
+                    builder => builder.WithOrigins("http://localhost:3000")
                                                     .AllowAnyHeader()
                                                   .AllowAnyMethod());
             });

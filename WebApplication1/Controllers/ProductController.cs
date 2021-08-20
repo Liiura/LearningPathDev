@@ -2,6 +2,7 @@
 using LearningPathDev.Interfaces;
 using LearningPathDev.Models;
 using LearningPathDev.Models.DTO;
+using LearningPathDev.ObjectReponses;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -35,14 +36,18 @@ namespace LearningPathDev.Controllers
         // GET api/<ProductController>/5
         [HttpGet]
         [Route("search")]
-        public async Task<IActionResult> GetProductWithFilter(string description, Guid Id)
+        public async Task<IActionResult> GetProductWithFilter(string description, string Id)
         {
-            if (string.IsNullOrEmpty(description) && Id == Guid.Empty)
+            if (string.IsNullOrEmpty(description) && Guid.Parse(Id) == Guid.Empty)
             {
                 return StatusCode(400, "bad request");
             }
+            ProductReponse response = new ProductReponse();
+            if (Id == null)
+            {
+                response = await _IProduct.GetProductByFilter(description, Guid.Empty);
 
-            var response = await _IProduct.GetProductByFilter(description, Id);
+            }
             if (response.StatusCode == 200)
             {
                 if (response.Products != null)
@@ -86,9 +91,9 @@ namespace LearningPathDev.Controllers
 
         // PUT api/<ProductController>/5
         [HttpPut]
-        public async Task<IActionResult> UpdateProduct(Guid Id, [FromBody] ProductDTO productDTO)
+        public async Task<IActionResult> UpdateProduct(string Id, [FromBody] ProductDTO productDTO)
         {
-            if (Id == null || Id == Guid.Empty)
+            if (Guid.Parse(Id) == null || Guid.Parse(Id) == Guid.Empty)
             {
                 return StatusCode(400, "You need provide a valid identification for update the resource");
             }
@@ -96,7 +101,7 @@ namespace LearningPathDev.Controllers
             {
                 return StatusCode(400, "You need provide a valid data for update a resource");
             }
-            var payload = await _IProduct.UpdateProduct(Id, productDTO);
+            var payload = await _IProduct.UpdateProduct(Guid.Parse(Id), productDTO);
             string message;
             if (payload.TransactionState)
             {
@@ -108,13 +113,13 @@ namespace LearningPathDev.Controllers
 
         // DELETE api/<ProductController>/5
         [HttpDelete]
-        public async Task<IActionResult> DeleteProduct(Guid Id)
+        public async Task<IActionResult> DeleteProduct(string Id)
         {
-            if (Id == null || Id == Guid.Empty)
+            if (Guid.Parse(Id) == null || Guid.Parse(Id) == Guid.Empty)
             {
                 return StatusCode(400, "You need provide a valid identification for delete the resource");
             }
-            var payload = await _IProduct.DeleteProduct(Id);
+            var payload = await _IProduct.DeleteProduct(Guid.Parse(Id));
             string message;
             if (payload.TransactionState)
             {
